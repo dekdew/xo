@@ -41,7 +41,9 @@ class XOGame {
 
     botButton.addEventListener("click", () => {
       this.gameMode = "bot";
-      this.currentPlayer = "X"; // Player always starts as X in bot mode
+      // Force reset any previous game state
+      this.currentPlayer = "X"; // Player always starts as X in bot mode initially
+      this.lastWinner = null; // Reset winner state
       this.startGame();
     });
   }
@@ -110,6 +112,8 @@ class XOGame {
     
     this.updateDisplay();
     this.updateRoundHighlight();
+    
+    console.log(`Initial game setup - Starting player: ${this.currentPlayer}, Mode: ${this.gameMode}`);
   }
 
   handleCellClick(event) {
@@ -315,11 +319,17 @@ class XOGame {
   resetGame() {
     this.board = Array(9).fill("");
 
-    // Loser plays first in next game (or random if no previous winner)
-    if (this.lastWinner) {
-      this.currentPlayer = this.lastWinner === "X" ? "O" : "X"; // Loser starts
+    // In bot mode, handle starting player differently
+    if (this.gameMode === "bot") {
+      // In bot mode, always let player start for consistency
+      this.currentPlayer = "X"; // Player always starts in bot mode
     } else {
-      this.currentPlayer = Math.random() < 0.5 ? "X" : "O"; // Random if first game
+      // PvP mode: Loser plays first in next game (or random if no previous winner)
+      if (this.lastWinner) {
+        this.currentPlayer = this.lastWinner === "X" ? "O" : "X"; // Loser starts
+      } else {
+        this.currentPlayer = Math.random() < 0.5 ? "X" : "O"; // Random if first game
+      }
     }
 
     this.gameActive = true;
@@ -332,6 +342,9 @@ class XOGame {
     });
 
     this.updateDisplay();
+    
+    // Since player always starts in bot mode, no need to trigger bot move here
+    console.log(`Game reset - Starting player: ${this.currentPlayer}, Mode: ${this.gameMode}`);
   }
 
   showNextRoundButton() {

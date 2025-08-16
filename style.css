@@ -516,6 +516,15 @@ h1 {
         width: 90px;
     }
     
+    .player-emoji::before {
+        top: -5px;
+        font-size: 0.95rem;
+    }
+    
+    .player-emoji.winner::before {
+        transform: translateX(-50%) translateY(0px);
+    }
+    
     .round-display {
         gap: 18px;
     }
@@ -556,6 +565,15 @@ h1 {
     
     .player-emoji {
         font-size: 1.5rem;
+    }
+    
+    .player-emoji::before {
+        top: -4px;
+        font-size: 0.9rem;
+    }
+    
+    .player-emoji.winner::before {
+        transform: translateX(-50%) translateY(0);
     }
     
     .score-value {
