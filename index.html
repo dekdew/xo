@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="player-score player-x corner-left" id="playerXScore">
+        <div class="player-emoji">🐱</div>
+        <div class="score-value" id="scoreX">0</div>
+      </div>
+
+      <div class="player-score player-o corner-right" id="playerOScore">
+        <div class="player-emoji">🐶</div>
+        <div class="score-value" id="scoreO">0</div>
+      </div>
+
+      <div class="round-counter">
+        <div class="round-display">
+          <span class="round-icon" id="round1">⚔️</span>
+          <span class="round-icon" id="round2">⚔️</span>
+          <span class="round-icon" id="round3">⚔️</span>
+          <span class="round-icon" id="round4">⚔️</span>
+          <span class="round-icon" id="round5">⚔️</span>
+        </div>
+      </div>
+
+      <div class="turn-counter" id="gameStatus">
+        Turn: <span id="turnCount">1</span>
+      </div>
+
+      <div class="game-board" id="gameBoard">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+      </div>
+
+      <div class="game-controls">
+        <button
+          id="resetSeriesButton"
+          class="btn btn-secondary"
+          style="display: none"
+        >
+          New Game
+        </button>
+        <button id="nextRoundButton" class="btn btn-primary" style="display: none">
+          Next Round
+        </button>
+        <button id="resetButton" class="btn">🏳️ Surrender</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
