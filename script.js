@@ -11,6 +11,8 @@ class XOGame {
     this.lastWinner = null; // Track last winner
     this.maxChips = 3; // Maximum chips per player
     this.playerMoves = { X: [], O: [] }; // Track move order for each player
+    this.gameMode = "pvp"; // "pvp" or "bot"
+    this.isPlayerTurn = true; // For bot mode
 
     this.winningConditions = [
       [0, 1, 2],
@@ -23,7 +25,53 @@ class XOGame {
       [2, 4, 6], // Diagonals
     ];
 
+    this.setupModeSelection();
+  }
+
+  setupModeSelection() {
+    const modeSelection = document.getElementById("modeSelection");
+    const gameContainer = document.getElementById("gameContainer");
+    const pvpButton = document.getElementById("pvpMode");
+    const botButton = document.getElementById("botMode");
+
+    pvpButton.addEventListener("click", () => {
+      this.gameMode = "pvp";
+      this.startGame();
+    });
+
+    botButton.addEventListener("click", () => {
+      this.gameMode = "bot";
+      this.currentPlayer = "X"; // Player always starts as X in bot mode
+      this.startGame();
+    });
+  }
+
+  startGame() {
+    const modeSelection = document.getElementById("modeSelection");
+    const gameContainer = document.getElementById("gameContainer");
+    
+    modeSelection.style.display = "none";
+    gameContainer.style.display = "block";
+    
+    this.updatePlayerDisplays();
     this.initializeGame();
+  }
+
+  getPlayerEmoji(player) {
+    if (player === "X") {
+      return "🐱";
+    } else {
+      return this.gameMode === "bot" ? "🤖" : "🐶";
+    }
+  }
+
+  updatePlayerDisplays() {
+    // Update the corner score displays
+    const playerXEmoji = document.querySelector("#playerXScore .player-emoji");
+    const playerOEmoji = document.querySelector("#playerOScore .player-emoji");
+    
+    playerXEmoji.textContent = this.getPlayerEmoji("X");
+    playerOEmoji.textContent = this.getPlayerEmoji("O");
   }
 
   initializeGame() {
@@ -72,6 +120,11 @@ class XOGame {
       return;
     }
 
+    // Prevent clicks during bot turn
+    if (this.gameMode === "bot" && this.currentPlayer === "O") {
+      return;
+    }
+
     this.makeMove(cellIndex, cell);
   }
 
@@ -85,7 +138,7 @@ class XOGame {
 
     // Place new chip
     this.board[index] = this.currentPlayer;
-    cell.textContent = this.currentPlayer === "X" ? "🐱" : "🐶";
+    cell.textContent = this.getPlayerEmoji(this.currentPlayer);
     cell.classList.add(this.currentPlayer.toLowerCase());
 
     // Add this move to player's move history
@@ -160,7 +213,7 @@ class XOGame {
 
     if (result === "win") {
       const winner = this.currentPlayer;
-      const winnerEmoji = winner === "X" ? "🐱" : "🐶";
+      const winnerEmoji = this.getPlayerEmoji(winner);
       this.gameStatusDisplay.innerHTML = `<span class="winner-announcement">🎉 ${winnerEmoji} Wins! 🎉</span>`;
 
       // Store winner for next game starting player
@@ -216,6 +269,13 @@ class XOGame {
     this.turn++;
     this.updateDisplay();
     this.updateChipVisuals(); // Update blinking for new current player
+    
+    // Bot move in bot mode
+    if (this.gameMode === "bot" && this.currentPlayer === "O" && this.gameActive) {
+      setTimeout(() => {
+        this.makeBotMove();
+      }, 500); // Small delay for better UX
+    }
   }
 
   updateDisplay() {
@@ -279,9 +339,9 @@ class XOGame {
       // Series ended, show final winner
       let finalWinner;
       if (this.scoreX > this.scoreO) {
-        finalWinner = "🐱 Wins! 🎉";
+        finalWinner = `${this.getPlayerEmoji("X")} Wins! 🎉`;
       } else if (this.scoreO > this.scoreX) {
-        finalWinner = "🐶 Wins! 🎉";
+        finalWinner = `${this.getPlayerEmoji("O")} Wins! 🎉`;
       } else {
         finalWinner = "Tied! 🤝";
       }
@@ -298,8 +358,8 @@ class XOGame {
       // Current player loses by surrendering
       const loser = this.currentPlayer;
       const winner = loser === "X" ? "O" : "X";
-      const winnerEmoji = winner === "X" ? "🐱" : "🐶";
-      const loserEmoji = loser === "X" ? "🐱" : "🐶";
+      const winnerEmoji = this.getPlayerEmoji(winner);
+      const loserEmoji = this.getPlayerEmoji(loser);
 
       this.gameStatusDisplay.innerHTML = `<span class="winner-announcement">🏳️ ${winnerEmoji} Wins! 🎉</span>`;
 
@@ -381,7 +441,7 @@ class XOGame {
   updateRoundIcon(winner) {
     const roundIndex = this.currentRound - 1;
     if (roundIndex >= 0 && roundIndex < this.roundIcons.length) {
-      const winnerEmoji = winner === "X" ? "🐱" : "🐶";
+      const winnerEmoji = this.getPlayerEmoji(winner);
       this.roundIcons[roundIndex].textContent = winnerEmoji;
     }
   }
@@ -433,6 +493,83 @@ class XOGame {
         displayElement.classList.add("score-updating");
       }
     }, stepDuration);
+  }
+
+  // Bot AI Methods
+  makeBotMove() {
+    if (!this.gameActive) return;
+
+    const availableMoves = this.getAvailableMoves();
+    if (availableMoves.length === 0) return;
+
+    let bestMove = this.getBestMove();
+    
+    // If no strategic move found, pick random
+    if (bestMove === -1) {
+      bestMove = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+    }
+
+    const cell = this.cells[bestMove];
+    this.makeMove(bestMove, cell);
+  }
+
+  getAvailableMoves() {
+    return this.board
+      .map((cell, index) => cell === "" ? index : null)
+      .filter(index => index !== null);
+  }
+
+  getBestMove() {
+    // 1. Try to win
+    for (let i = 0; i < 9; i++) {
+      if (this.board[i] === "") {
+        this.board[i] = "O";
+        if (this.checkWinnerForPlayer("O")) {
+          this.board[i] = "";
+          return i;
+        }
+        this.board[i] = "";
+      }
+    }
+
+    // 2. Block player from winning
+    for (let i = 0; i < 9; i++) {
+      if (this.board[i] === "") {
+        this.board[i] = "X";
+        if (this.checkWinnerForPlayer("X")) {
+          this.board[i] = "";
+          return i;
+        }
+        this.board[i] = "";
+      }
+    }
+
+    // 3. Take center if available
+    if (this.board[4] === "") {
+      return 4;
+    }
+
+    // 4. Take corners
+    const corners = [0, 2, 6, 8];
+    const availableCorners = corners.filter(i => this.board[i] === "");
+    if (availableCorners.length > 0) {
+      return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+    }
+
+    // 5. Take edges
+    const edges = [1, 3, 5, 7];
+    const availableEdges = edges.filter(i => this.board[i] === "");
+    if (availableEdges.length > 0) {
+      return availableEdges[Math.floor(Math.random() * availableEdges.length)];
+    }
+
+    return -1;
+  }
+
+  checkWinnerForPlayer(player) {
+    return this.winningConditions.some(condition => 
+      condition.every(index => this.board[index] === player)
+    );
   }
 }
 

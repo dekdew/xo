@@ -7,7 +7,27 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="container">
+    <!-- Game Mode Selection Screen -->
+    <div class="mode-selection" id="modeSelection">
+      <div class="mode-container">
+        <h1>Game Mode</h1>
+        <div class="mode-buttons">
+          <button id="pvpMode" class="btn btn-mode">
+            <div class="mode-icon">👥</div>
+            <div class="mode-title">PvP</div>
+            <div class="mode-desc">Play with a friend</div>
+          </button>
+          <button id="botMode" class="btn btn-mode">
+            <div class="mode-icon">🤖</div>
+            <div class="mode-title">PvE</div>
+            <div class="mode-desc">Play against AI</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div class="container" id="gameContainer" style="display: none;">
       <div class="player-score player-x corner-left" id="playerXScore">
         <div class="player-emoji">🐱</div>
         <div class="score-value" id="scoreX">0</div>
